@@ -8,7 +8,6 @@ describe('LoginController', function() {
 
     postDataMock,
     stateMock,
-    ionicLoadingMock,
 
     scope,
     localStorageService,
@@ -45,7 +44,7 @@ describe('LoginController', function() {
 
         spyOn(localStorageService, 'set').and.callFake(function (key, value) {
         	store[key] = value;
-        })
+        });
 
 		LoginController = $controller('LoginController', {
 			'$state' : stateMock,
