@@ -30,7 +30,7 @@ describe('LoginController', function() {
 
 		stateMock = jasmine.createSpyObj('$state spy', ['go']);
 
-		ionicLoadingMock = jasmine.createSpyObj('$ionicLoading spy', ['show']);
+		  
 
 		store = [];
 
@@ -75,9 +75,6 @@ describe('LoginController', function() {
 
     describe('when the login is executed', function() {
 
-
-        it('should call localStorageService to get loginService', function() {})
-    	
         	
     	it('if successful, should change state to home', function() {
 
@@ -105,7 +102,7 @@ describe('LoginController', function() {
 
     });
 
-    	it('check if JWT login services work and redirects to app.home',
+    	it('checks if JWT login services work and redirects to app.home',
     	 function() {
 
     		expect(LoginController.logged_in).toEqual(true);
