@@ -1,148 +1,155 @@
-describe('HomeController', function() {
+describe('HomeController', function () {
 
-	var localStorageService,
-	store,
-	HomeController,
-	stateMock,
-	intervalSpy;
+    var localStorageService,
+        store,
+        HomeController,
+        stateMock,
+        intervalSpy;
 
 
-	beforeEach(module('pmApp.HomeCtrl', 'LocalStorageModule'));
+    beforeEach(module('pmApp.HomeCtrl', 'LocalStorageModule'));
 
 
-		beforeEach(inject(function($controller, $q, _localStorageService_, $rootScope, $interval) {
+    beforeEach(inject(function ($controller, $q, _localStorageService_, $rootScope, $interval) {
 
 
-			deferredcheckLoginOrigin = $q.defer();
-			deferredFindFbUser = $q.defer();
-			deferredFbConnectPlugin = $q.defer();
+        deferredcheckLoginOrigin = $q.defer();
+        deferredFindFbUser = $q.defer();
+        deferredFbConnectPlugin = $q.defer();
 
-			loginOriginMock = {
-				checkLoginOrigin : jasmine.createSpy('checkLoginOrigin spy')
-											.and.returnValue(deferredcheckLoginOrigin.promise)
-			};
+        loginOriginMock = {
+            checkLoginOrigin: jasmine.createSpy('checkLoginOrigin spy')
+                .and.returnValue(deferredcheckLoginOrigin.promise)
+        };
 
-			postDataMock = {
-				findFbUser : jasmine.createSpy('findFbUser spy')
-											.and.returnValue(deferredFindFbUser.promise)
-			};
+        postDataMock = {
+            findFbUser: jasmine.createSpy('findFbUser spy')
+                .and.returnValue(deferredFindFbUser.promise)
+        };
 
-			facebookConnectPlugin = {
-				api : jasmine.createSpy('api spy'),
-											
-				logout : jasmine.createSpy('logout spy')
+        friendListMock = {
+            setOnlineStatus: jasmine.createSpy('setOnlineStatus spy')
+        };
 
-			};
+        facebookConnectPlugin = {
+            api: jasmine.createSpy('api spy'),
 
-			intervalSpy = jasmine.createSpy('$interval', $interval).and.callThrough();;
+            logout: jasmine.createSpy('logout spy')
 
-			spyOn(intervalSpy, 'cancel');
+        };
 
-			store = [];
+        intervalSpy = jasmine.createSpy('$interval', $interval).and.callThrough();
+        ;
 
-			localStorageService = _localStorageService_;
+        spyOn(intervalSpy, 'cancel');
 
-			scope = $rootScope.$new();
+        store = [];
 
+        localStorageService = _localStorageService_;
 
-			spyOn(localStorageService, 'get').and.callFake(function(key) {
-				return store[key];
-			});
+        scope = $rootScope.$new();
 
-			spyOn(localStorageService, 'set').and.callFake(function(key, value) {
-				store[key] = value;
-			});
 
+        spyOn(localStorageService, 'get').and.callFake(function (key) {
+            return store[key];
+        });
 
+        spyOn(localStorageService, 'set').and.callFake(function (key, value) {
+            store[key] = value;
+        });
 
-			stateMock = jasmine.createSpyObj('$state spy', ['go']);
 
+        stateMock = jasmine.createSpyObj('$state spy', ['go']);
 
-			HomeController = $controller('HomeController', {
-				'loginOrigin' : loginOriginMock,
-				'postData' : postDataMock,
-				'$state' : stateMock,
-				$interval : intervalSpy,
-				localStorageService : localStorageService,
-				$scope : scope
-			});
 
+        HomeController = $controller('HomeController', {
+            'loginOrigin': loginOriginMock,
+            'postData': postDataMock,
+            'friendList' : friendListMock,
+            '$state': stateMock,
+            $interval: intervalSpy,
+            localStorageService: localStorageService,
+            $scope: scope
+        });
 
-		}));
 
+    }));
 
 
-		describe('veryfing user login origin and data', function() {
+    describe('veryfing user login origin and data', function () {
 
-			beforeEach(function() {
-				localStorageService.set('username', 'testUsername');
-				HomeController.getUserInfo();
-			});
+        beforeEach(function () {
+            localStorageService.set('username', 'testUsername');
+            HomeController.getUserInfo();
+        });
 
 
-			it('should call getUserInfo and wait for response', function() {
+        it('should call getUserInfo and wait for response', function () {
 
-				expect(scope.userDetails).toBe(undefined);
+            expect(scope.userDetails).toBe(undefined);
 
-				expect(loginOriginMock.checkLoginOrigin).toHaveBeenCalled();
+            expect(loginOriginMock.checkLoginOrigin).toHaveBeenCalled();
 
 
-			});
+        });
 
 
-			it('should choose JWT as login service', function() {
+        it('should choose JWT as login service', function () {
 
-				deferredcheckLoginOrigin.resolve('jwt');
+            deferredcheckLoginOrigin.resolve('jwt');
 
-				scope.$digest();
+            scope.$digest();
 
-				expect(localStorageService.set).toHaveBeenCalledWith('username', 'testUsername');
+            expect(localStorageService.set).toHaveBeenCalledWith('username', 'testUsername');
 
-			});
+        });
 
 
+        it('should choose FB as login service and set data', function () {
 
-			it('should choose FB as login service and set data', function() {
+            deferredcheckLoginOrigin.resolve('fb');
 
-				deferredcheckLoginOrigin.resolve('fb');
+            scope.$digest();
 
-				scope.$digest();
+            expect(localStorageService.get).toHaveBeenCalledWith('user.id');
+            expect(localStorageService.get).toHaveBeenCalledWith('user.authToken');
+            expect(facebookConnectPlugin.api).toHaveBeenCalled();
 
-				expect(localStorageService.get).toHaveBeenCalledWith('user.id');
-				expect(localStorageService.get).toHaveBeenCalledWith('user.authToken');
-				expect(facebookConnectPlugin.api).toHaveBeenCalled();
 
+        })
 
-			})
 
+    });
 
+    describe('user LOGOUT button go to back to login screen', function () {
 
-		});
+        beforeEach(function () {
 
-		describe('user LOGOUT button go to back to login screen', function() {
+            HomeController.logout();
 
-			beforeEach(function() {
+            expect(localStorageService.get).toHaveBeenCalledWith('loginService');
+        });
 
-				HomeController.logout();
 
-				expect(localStorageService.get).toHaveBeenCalledWith('loginService');
-			});
+        it('should set online status to false', function() {
 
+           expect(friendListMock.setOnlineStatus).toHaveBeenCalledWith(undefined, undefined, false);
 
-			it('should cancel friend list interval', function() {	
+        });
 
-				expect(intervalSpy.cancel).toHaveBeenCalled();
+        it('should cancel friend list interval', function () {
 
-			});
+            expect(intervalSpy.cancel).toHaveBeenCalled();
 
+        });
 
-			it('should go back to app.login state', function() {
-				expect(stateMock.go).toHaveBeenCalledWith('app.login');
-			});
 
+        it('should go back to app.login state', function () {
+            expect(stateMock.go).toHaveBeenCalledWith('app.login');
+        });
 
-		})
 
+    })
 
 
-})
+});

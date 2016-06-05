@@ -3,7 +3,6 @@ describe('SERVICE: PostData tests', function() {
 
 	var postData,
 	httpBackend,
-	serverConstant,
 	SERVER;
 
 	SERVER = {

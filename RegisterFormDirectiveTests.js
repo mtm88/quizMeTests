@@ -5,8 +5,6 @@ describe('DIRECTIVE: Register form live validation', function () {
 	repassElement,
 	repassNgModel,
 	scope,
-	element,
-
 	SERVER;
 
 	SERVER = {
@@ -18,7 +16,7 @@ describe('DIRECTIVE: Register form live validation', function () {
 		$provide.constant('SERVER', SERVER);
 	}));
 
-	beforeEach(inject(function($compile, $rootScope, $controller) {	
+	beforeEach(inject(function($compile, $rootScope) {
 		scope = $rootScope.$new();
 		usernameElement = $compile('<input type="text" name="username" ng-model="register_ctrl.username" user-availability-validator/>')(scope);
 		usernameNgModel = usernameElement.controller('ngModel');
@@ -135,7 +133,7 @@ describe('DIRECTIVE: Register form live validation', function () {
 
 
 
-	})
+	});
 
 
 
